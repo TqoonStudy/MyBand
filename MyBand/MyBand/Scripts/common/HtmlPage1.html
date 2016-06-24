@@ -1,0 +1,137 @@
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ include file="/commons/sitemesh/include/taglib.jsp"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript">
+
+
+        $(document).ready(function () {
+
+
+            commentList();
+
+
+
+            //코멘트 목록
+            function commentList() {
+                $.ajax({
+                    url: "/brd/mbd/cmtSelectList.json",
+                    dataType: "json",
+                    data: "boardNo=${vo.boardNo}"
+                }).done(function (response) {
+                    console.log(response);
+
+                    var divHtml = "";
+                    response.forEach(function (cmtvo, index) {
+                        console.log(index + "-" + cmtvo);
+
+                        divHtml += "<div id='cmt_" + cmtvo.cmtNo + "'>"
+                        divHtml += cmtvo.cmtNo + "&nbsp;&nbsp;";
+                        divHtml += cmtvo.cmtWriter + "&nbsp;&nbsp;";
+                        divHtml += cmtvo.cmtContent + "&nbsp;&nbsp;";
+                        divHtml += "<a href='#1'onclick='cmtDel(" + cmtvo.cmtNo + ")'>삭제</a>";
+                        divHtml += "</div>";
+                    })
+                    $("#commentList").append(divHtml);
+
+
+                })
+            }
+
+            //코멘트 삭제
+            function cmtDel(cmtNo) {
+                $.ajax({
+                    url: "/brd/mbd/cmtDelete.json",
+                    type: "POST",
+                    dataType: "json",
+                    data: cmtvo.cmtNo
+                }).done(function (response) {
+                    console.log(cmtNo);
+                    $("#cmt_" + cmtNo).remove();
+                    alert("댓글삭제");
+                })
+            }
+
+            $("#deleteBtn").click(function () {
+                if (confirm("게시물을 삭제?")) {
+                    location.href = "${pageContext.request.contextPath}/brd/mbd/delectBoard.do?boardNo=${vo.boardNo}";
+                }
+            })
+            $("#modifyBtn").click(function () {
+                location.href = "${pageContext.request.contextPath}/brd/mbd/modifyForm.do?boardNo=${vo.boardNo}";
+            })
+
+            //코멘트 등록
+            $("#inputBtn").click(function () {
+                $.ajax({
+                    url: "/brd/mbd/cmtInsert.json",
+                    type: "POST",
+                    dateType: "json",
+                    data: {
+                        boardNo: '${vo.boardNo}',
+                        cmtWriter: $("#cmtWriter").val(),
+                        cmtContent: $("#cmtContent").val()
+                    }
+                }).done(function (data) {
+                    console.log(data)
+                    alert("등록");
+                })
+            })
+
+
+
+        })
+
+    </script>
+    <title>BoardDetail</title>
+</head>
+<body>
+    <h2>BoardDetail</h2>
+    <div>
+        <table border="1">
+            <tr>
+                <td>NO</td>
+                <td>${vo.boardNo}</td>
+            </tr>
+            <tr>
+                <td>TITLE</td>
+                <td>${vo.title}</td>
+            </tr>
+            <tr>
+                <td>DATE</td>
+                <td>${vo.date}</td>
+            </tr>
+            <tr>
+                <td>CONTENT</td>
+                <td>${vo.content}</td>
+            </tr>
+        </table>
+        <br />
+        <button id="modifyBtn">수정</button>
+        <button id="deleteBtn">삭제</button>
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <!-- Comment -->
+    <h3>Comment</h3>
+    <div id="cmtDiv">
+        <div>
+            이름 <input type="text" id="cmtWriter" size="30">
+            내용 <input type="text" id="cmtContent" size="70">
+            <button id="inputBtn">등록</button>
+        </div>
+        <br />
+        <br />
+        <h4>commetList</h4>
+        <div id="commentList">
+        </div>
+
+    </div>
+</body>
+</html>
